@@ -21,7 +21,6 @@
         .player-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #374151; }
         .room-badge { background: #0c4a6e; color: #38bdf8; padding: 5px 12px; border-radius: 6px; font-weight: bold; font-size: 18px; display: inline-block; }
         .ans-card { background: #111827; border: 1px solid #374151; padding: 12px; border-radius: 8px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .counter-badge { background: #374151; color: #fbbf24; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
     </style>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
 </head>
@@ -33,16 +32,17 @@
     <div id="loginScreen" class="container">
         <h2>مرحباً بك في السيرفر الأونلاين المطور</h2>
         <br>
-        <input type="text" id="mainName" placeholder="اسمك الحقيقي الحين...">
-        <button onclick="showPlayerSetup()">🏃 الدخول كـ لاعب في الديوانية</button>
+        <input type="text" id="mainName" placeholder="اسمك الحقيقي الصدقي الحين...">
+        <input type="text" id="mainNick" placeholder="لقبك السري المجهول (لللاعبين)...">
+        <button onclick="showPlayerSetup()">🏃 الانضمام كـ لاعب بالديوانية</button>
         <button onclick="showHostSetup()" class="btn-host">👑 الدخول كـ هوست (كلمة السر 27)</button>
     </div>
 
-    <!-- شاشة إعداد اللاعب -->
+    <!-- شاشة إعداد اللاعب ورقم الغرفة -->
     <div id="playerSetupScreen" class="container hidden">
         <h2>انضمام كـ لاعب أونلاين</h2>
         <input type="text" id="joinRoomId" placeholder="اكتب رقم الغرفة حق الهوست...">
-        <button onclick="connectAsPlayer()">اتصل بالهوست والعب لايف 🚀</button>
+        <button onclick="connectAsPlayer()">اتصل بالهوست وابدأ اللعب لايف 🚀</button>
         <button onclick="backToMain()" style="background:#374151;">رجوع</button>
     </div>
 
@@ -60,28 +60,24 @@
         <div class="box" style="text-align: center;">
             <p style="color: #9ca3af;">رقم الغرفة الحالي للشباب:</p>
             <div id="hostRoomIdDisplay" class="room-badge">...</div>
-            <div style="margin-top: 10px;">
-                <span class="counter-badge">الأسئلة المرسلة في هذه الجولة: <span id="qCounterDisplay">0</span> / 2</span>
-            </div>
         </div>
 
-        <!-- القسم الأول: بث سؤال عادي (السؤال 1 و 2) -->
-        <div id="hostQuestionSection" class="box">
+        <!-- بث سؤال عادي (السؤال 1 و 2) -->
+        <div class="box">
             <h3 style="color: #38bdf8; margin-bottom: 10px;">📝 المرحلة الأولى: بث الأسئلة العامة (اكتب سؤالين):</h3>
             <input type="text" id="hostQuestionInput" placeholder="اكتب سؤالك هنا (مثال: من فاز ببطولة البارح؟)">
-            <button onclick="broadcastCustomQuestion()" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">🚀 بث السؤال للشباب الحين</button>
+            <button onclick="broadcastCustomQuestion()" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">🚀 بث هذا السؤال لشاشاتهم الحين</button>
         </div>
 
-        <!-- القسم الثاني: فتح جولة التصويت على الألقاب (يفتح بعد كل سؤالين) -->
-        <div id="hostVoteSection" class="box style-disabled">
-            <h3 style="color: #10b981; margin-bottom: 10px;">🎭 المرحلة الثانية: جولة التصويت الكبرى على الألقاب:</h3>
-            <p style="font-size: 12px; color: #a1a1aa; margin-bottom: 8px;">تفتح وتطلقها بعد كل سؤالين عامة تنتهي عشان يبدأ نظام قفط الألقاب:</p>
-            <button id="voteRoundBtn" onclick="broadcastVoteRound()" style="background: linear-gradient(135deg, #10b981, #059669);">🔓 إطلاق جولة تصويت الألقاب الحرة الحين</button>
-        </div>
-
-        <!-- استقبال إجابات وتخمينات الربع لايف وتوزيع النقاط من عندك -->
+        <!-- فتح جولة التصويت على الألقاب -->
         <div class="box">
-            <h3 style="color: #f59e0b; margin-bottom: 10px;">📥 الإجابات والتخمينات المكتوبة اللي وصلت لايف:</h3>
+            <h3 style="color: #10b981; margin-bottom: 10px;">🎭 المرحلة الثانية: جولة التصويت الكبرى على الألقاب:</h3>
+            <button onclick="broadcastVoteRound()" style="background: linear-gradient(135deg, #10b981, #059669);">🔓 إطلاق جولة تصويت الألقاب الحرة الحين</button>
+        </div>
+
+        <!-- استقبال إجابات وتخمينات الربع لايف وتوزيع النقاط -->
+        <div class="box">
+            <h3 style="color: #f59e0b; margin-bottom: 10px;">📥 الأجوبة والتخمينات اللي وصلت لايف:</h3>
             <div id="hostAnswersArea">
                 <p style="color:#6b7280; text-align:center;">بانتظار إرسال الربع من جوالاتهم...</p>
             </div>
@@ -100,9 +96,11 @@
         <div class="box" style="text-align: center;">
             <p id="playerScoreDisplay" style="color: #10b981; font-size: 20px; font-weight: bold;">نقاطك الحالية: 0</p>
         </div>
-        <p id="playerStatusText" style="color: #38bdf8; margin: 15px 0;">🟢 متصل بالسيرفر لايف! انتظر رامي يبث لكم سؤال أو يفتح جولة التصويت...</p>
+        
+        <!-- حالة الانتظار -->
+        <p id="playerStatusText" style="color: #38bdf8; margin: 15px 0;">🟢 متصل بالسيرفر! انتظر رامي يطلق لكم سؤال أو جولة التصويت وبتحول شاشتك فوري...</p>
 
-        <!-- صندوق الكتابة الحر والاستقبال اللحظي من جوالك -->
+        <!-- صندوق الكتابة الحر والاستقبال اللحظي من جوالك (يتحرك ويظهر تلقائياً) -->
         <div id="activeQuestionBox" class="box hidden">
             <h3 id="liveQuestionLabel" style="color: #f59e0b; margin-bottom: 15px; text-align: center;"></h3>
             <textarea id="playerAnswerInput" rows="2" placeholder="اكتب إجابتك أو تخمينك هنا بيدك الحين..."></textarea>
@@ -116,12 +114,13 @@
         let playerConnections = [];
         let myRole = '';
         let myGlobalName = '';
+        let myGlobalNick = '';
         let playersData = {};
-        let questionCount = 0; // عدّاد الأسئلة عند الهوست
 
         function showPlayerSetup() {
             myGlobalName = document.getElementById('mainName').value.trim();
-            if(!myGlobalName) { alert("اكتب اسمك الحقيقي أول!"); return; }
+            myGlobalNick = document.getElementById('mainNick').value.trim();
+            if(!myGlobalName || !myGlobalNick) { alert("تكفى اكتب اسمك الصدقي ولقبك السري أول!"); return; }
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('playerSetupScreen').classList.remove('hidden');
         }
@@ -158,7 +157,7 @@
             peer.on('connection', function(conn) {
                 conn.on('data', function(data) {
                     if(data.type === 'JOIN') {
-                        playersData[conn.peer] = { name: data.name, score: 0, currentAnswer: '' };
+                        playersData[conn.peer] = { name: data.name, nick: data.nick, score: 0, currentAnswer: '' };
                         playerConnections.push(conn);
                         updateHostUI();
                         syncScoresToPlayers();
@@ -178,12 +177,10 @@
         }
 
         function updateHostUI() {
-            document.getElementById('qCounterDisplay').innerText = questionCount;
-
             const list = document.getElementById('hostPlayersList');
             list.innerHTML = Object.keys(playersData).map(pId => `
                 <div class="player-row">
-                    <span>🟢 <strong>${playersData[pId].name}</strong>: <span style="color:#10b981;">${playersData[pId].score} نقطة</span></span>
+                    <span>🟢 <strong>${playersData[pId].name}</strong> (${playersData[pId].nick}): <span style="color:#10b981;">${playersData[pId].score} نقطة</span></span>
                     <div>
                         <button onclick="adjustScore('${pId}', 10)" class="btn-success">+10</button>
                         <button onclick="adjustScore('${pId}', -5)" style="background:#ea580c; width:auto; padding:6px 12px; font-size:13px;">-5</button>
@@ -201,7 +198,7 @@
                     </div>
                 `;
             }).join('');
-            ansArea.innerHTML = answersHtml || '<p style="color:#6b7280; text-align:center;">بانتظار وصول إجابات أو تخمين الربع من جوالاتهم...</p>';
+            ansArea.innerHTML = answersHtml || '<p style="color:#6b7280; text-align:center;">بانتظار وصول الأجوبة من الجوالات الحين...</p>';
         }
 
         function adjustScore(pId, amount) {
@@ -228,37 +225,32 @@
             }
         }
 
-        // بث سؤال مكتوب عادي من رامي (السؤال 1 و 2)
         function broadcastCustomQuestion() {
             const text = document.getElementById('hostQuestionInput').value.trim();
             if(!text) { alert("اكتب السؤال أول يا رامي!"); return; }
             
-            questionCount++;
             Object.keys(playersData).forEach(pId => playersData[pId].currentAnswer = '');
             updateHostUI();
 
             playerConnections.forEach(conn => {
-                conn.send({ type: 'OPEN_BOX', label: "📝 سؤال عادي من رامي: " + text });
+                conn.send({ type: 'OPEN_BOX', label: "📝 سؤال من رامي: " + text });
             });
-
-            alert(`تم بث السؤال رقم (${questionCount}) لجوالات الربع بنجاح!`);
+            alert("تم بث السؤال وتحركت شاشات الشباب الحين!");
             document.getElementById('hostQuestionInput').value = '';
         }
 
-        // بث جولة تصويت الألقاب المفتوحة
         function broadcastVoteRound() {
-            questionCount = 0; // إعادة تصدير عداد الأسئلة للبدء من جديد بعد التصويت
             Object.keys(playersData).forEach(pId => playersData[pId].currentAnswer = '');
             updateHostUI();
 
             playerConnections.forEach(conn => {
-                conn.send({ type: 'OPEN_BOX', label: "🎭 جولة التصويت الكبرى! اكتب تخمينك للألقاب بيدك الحين (مثال: محمد هو دينار)" });
+                conn.send({ type: 'OPEN_BOX', label: "🎭 جولة التصويت! اكتب تخمينك للألقاب بيدك الحين (مثال: محمد هو دينار)" });
             });
-            alert("🔥 أطلقت جولة التصويت المفتوحة على الألقاب في كل الجوالات الحين!");
+            alert("🔥 أطلقت جولة التصويت وفتحت صناديق الكتابة بجوالاتهم الحين!");
         }
 
 
-        // --- كود اللاعب والاتصال الأونلاين ---
+        // --- كود اللاعب والاتصال الأونلاين الحقيقي ---
         function connectAsPlayer() {
             const roomId = document.getElementById('joinRoomId').value.trim();
             if(!roomId) return;
@@ -271,11 +263,14 @@
                     document.getElementById('playerSetupScreen').classList.add('hidden');
                     document.getElementById('playerDashboard').classList.remove('hidden');
                     document.getElementById('playerWelcomeHeader').innerText = "🎮 لاعب: " + myGlobalName;
-                    connToHost.send({ type: 'JOIN', name: myGlobalName });
+                    
+                    // إرسال الاسم الصدقي واللقب السري للهوست فوري عند الدخول
+                    connToHost.send({ type: 'JOIN', name: myGlobalName, nick: myGlobalNick });
                 });
 
                 connToHost.on('data', function(data) {
                     if(data.type === 'OPEN_BOX') {
+                        // إخفاء نص الانتظار وإظهار مربع الكتابة فوراً بشكل متحرك لايف
                         document.getElementById('playerStatusText').classList.add('hidden');
                         document.getElementById('activeQuestionBox').classList.remove('hidden');
                         document.getElementById('liveQuestionLabel').innerText = data.label;
@@ -294,10 +289,12 @@
             const ans = document.getElementById('playerAnswerInput').value.trim();
             if(!ans) return;
             connToHost.send({ type: 'SUBMIT_ANSWER', answer: ans });
+            
+            // إعادة الشاشة لوضع الانتظار بعد الإرسال فوراً عشان تقفل عليهم وما يكررون الجواب
             document.getElementById('activeQuestionBox').classList.add('hidden');
             const status = document.getElementById('playerStatusText');
             status.classList.remove('hidden');
-            status.innerHTML = "✅ <strong style='color:#10b981;'>تم إرسال جوابك بنجاح لـ رامي!</strong> انتظر يشوف لوحته ويعطيكم نقاط ويطلق الجولة الجاية الحين...";
+            status.innerHTML = "✅ <strong>تم إرسال جوابك لـ رامي بنجاح!</strong> انتظر يعطي النقاط باللوحة ويفتح الجولة الجاية...";
         }
     </script>
 </body>
