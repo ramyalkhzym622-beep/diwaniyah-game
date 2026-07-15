@@ -8,55 +8,283 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #0b0f19; color: #f3f4f6; padding: 15px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         .container { max-width: 650px; width: 100%; background: #111827; padding: 25px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); border: 1px solid #1f2937; text-align: center; margin-top: 15px; }
-        h1 { color: #38bdf8; font-size: 24px; margin-bottom: 15px; }
-        input, select { width: 100%; padding: 12px; background: #1f2937; border: 1px solid #374151; border-radius: 10px; color: white; text-align: center; font-size: 16px; margin-bottom: 15px; }
-        button { width: 100%; padding: 14px; background: linear-gradient(135deg, #06b6d4, #0891b2); border: none; border-radius: 10px; color: white; font-weight: bold; font-size: 16px; cursor: pointer; }
+        h1 { color: #38bdf8; font-size: 26px; margin-bottom: 20px; text-shadow: 0 2px 10px rgba(56, 189, 248, 0.2); }
+        h2 { color: #cbd5e1; font-size: 18px; margin-bottom: 15px; }
+        .form-group { margin-bottom: 16px; text-align: right; }
+        label { display: block; margin-bottom: 6px; color: #9ca3af; font-size: 14px; }
+        input, select, textarea { width: 100%; padding: 12px; background: #1f2937; border: 1px solid #374151; border-radius: 10px; color: white; text-align: center; font-size: 16px; margin-bottom: 10px; }
+        input:focus, select:focus { border-color: #38bdf8; outline: none; }
+        button { width: 100%; padding: 14px; background: linear-gradient(135deg, #06b6d4, #0891b2); border: none; border-radius: 10px; color: white; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 5px; }
+        button:hover { opacity: 0.95; }
+        .btn-host { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); padding: 6px 12px; width: auto; font-size: 12px; margin: 0; }
         .hidden { display: none !important; }
-        .card-grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 20px; }
-        @media(min-width: 480px) { .card-grid { grid-template-columns: 1fr 1fr; } }
-        .nickname-card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 15px; text-align: right; }
-        .card-title { color: #f59e0b; font-weight: bold; font-size: 18px; margin-bottom: 10px; text-align: center; background: rgba(245, 158, 11, 0.1); padding: 6px; border-radius: 6px; }
+        .box { background: #1e293b; border: 1px solid #334155; padding: 15px; border-radius: 12px; margin-top: 15px; text-align: right; }
+        .player-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #374151; }
+        .q-card { background: #1f2937; border-right: 4px solid #38bdf8; padding: 12px; margin-top: 10px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; }
+        .opt-btn { background: #1f2937; border: 1px solid #374151; color: white; margin-bottom: 10px; text-align: right; padding: 15px; border-radius: 8px; transition: 0.2s; }
+        .opt-btn:hover { background: #374151; border-color: #38bdf8; }
+        .room-badge { background: #0c4a6e; color: #38bdf8; font-family: monospace; padding: 5px 12px; border-radius: 6px; font-weight: bold; font-size: 18px; display: inline-block; }
     </style>
-    <!-- استدعاء سيرفر المزامنة اللحظية أونلاين -->
+    <!-- سيرفر الربط الأونلاين المجاني المباشر -->
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
 </head>
 <body>
 
-    <h1>🎮 جيم ألقاب الديوانية الأونلاين 🎮</h1>
+    <h1>🎮 جيم ألقاب الديوانية لايف 🎮</h1>
 
-    <!-- شاشة الدخول -->
+    <!-- 1. شاشة الدخول واختيار الدور -->
     <div id="loginScreen" class="container">
-        <h2>ادخل الجيم الأونلاين الحين</h2>
+        <h2>مرحباً بك في السيرفر الأونلاين</h2>
         <br>
-        <input type="text" id="pName" placeholder="اسمك الحقيقي...">
-        <input type="text" id="pNick" placeholder="لقبك السري المجهول...">
-        <button onclick="connectToLiveServer()">دخول السيرفر والربط لايف 🚀</button>
+        <div class="form-group">
+            <input type="text" id="mainName" placeholder="اسمك الحقيقي الحين...">
+        </div>
+        
+        <button onclick="showPlayerSetup()">🏃 الدخول كـ لاعب في الديوانية</button>
+        <button onclick="showHostSetup()" class="btn-host">👑 الدخول كـ هوست (منظم الجيم)</button>
     </div>
 
-    <!-- ساحة اللعب الأونلاين -->
-    <div id="gameScreen" class="container hidden">
-        <p style="color: #10b981; font-size: 14px;">🟢 متصل بالسيرفر الأونلاين لايف!</p>
-        <div id="nicknamesGrid" class="card-grid"></div>
+    <!-- شاشة إعداد اللاعب -->
+    <div id="playerSetupScreen" class="container hidden">
+        <h2>انضمام كـ لاعب أونلاين</h2>
+        <input type="text" id="joinRoomId" placeholder="اكتب رقم الغرفة (يعطيك إياه الهوست)..." style="font-family: monospace;">
+        <button onclick="connectAsPlayer()">اتصل بالهوست والعب لايف 🚀</button>
+        <button onclick="backToMain()" class="btn-secondary" style="background:#374151;">رجوع</button>
+    </div>
+
+    <!-- شاشة إعداد الهوست -->
+    <div id="hostSetupScreen" class="container hidden">
+        <h2>لوحة تحقق الهوست السريّة</h2>
+        <input type="password" id="hostPassword" placeholder="أدخل كلمة سر الهوست المعتمدة...">
+        <button onclick="verifyAndStartHost()" class="btn-host">التحقق وتشغيل سيرفر الغرفة 🔑</button>
+        <button onclick="backToMain()" class="btn-secondary" style="background:#374151;">رجوع</button>
+    </div>
+
+    <!-- ==================== 2. شاشة الهوست الرئيسية ==================== -->
+    <div id="hostDashboard" class="container hidden">
+        <h2 style="color: #f59e0b;">👑 لوحة التحكم الحية للهوست</h2>
+        <div class="box" style="text-align: center;">
+            <p style="color: #9ca3af;">رقم الغرفة حقك (عطه للشباب يدخلون فيه):</p>
+            <div id="hostRoomIdDisplay" class="room-badge">جاري التوليد...</div>
+        </div>
+
+        <!-- قائمة اللاعبين الممتصلين والطرد -->
+        <div class="box">
+            <h3 style="color: #38bdf8; margin-bottom: 10px;">👥 الربع المتصلين لايف الحين (<span id="liveCount">0</span>):</h3>
+            <div id="hostPlayersList">
+                <p style="color:#6b7280; text-align:center;">بانتظار دخول أول لاعب من جواله...</p>
+            </div>
+        </div>
+
+        <!-- إضافة الأسئلة وبثها -->
+        <div class="box">
+            <h3 style="color: #10b981; margin-bottom: 10px;">➕ إضافة وبث الأسئلة لايف للشباب:</h3>
+            <input type="text" id="newQuestionText" placeholder="السؤال (مثال: من صاحب لقب دينار؟)">
+            <input type="text" id="optA" placeholder="الخيار الأول">
+            <input type="text" id="optB" placeholder="الخيار الثاني">
+            <input type="text" id="optC" placeholder="الخيار الثالث">
+            <select id="correctOpt">
+                <option value="1">الخيار الأول هو الصح</option>
+                <option value="2">الخيار الثاني هو الصح</option>
+                <option value="3">الخيار الثالث هو الصح</option>
+            </select>
+            <button onclick="addAndPushQuestion()" style="background: linear-gradient(135deg, #10b981, #059669);">🚀 بث هذا السؤال فوراً لشاشات الجميع</button>
+        </div>
+    </div>
+
+    <!-- ==================== 3. شاشة اللاعب الرئيسية لايف ==================== -->
+    <div id="playerDashboard" class="container hidden">
+        <h2 id="playerWelcomeHeader">🎮 ساحة اللعب الحية</h2>
+        <p id="playerStatusText" style="color: #38bdf8; margin: 15px 0;">🟢 متصل بنجاح! بانتظار الهوست يرسل ويطلق السؤال الأول...</p>
+
+        <!-- منطقة ظهور السؤال لايف -->
+        <div id="activeQuestionBox" class="box hidden" style="text-align: right;">
+            <h3 id="liveQuestionTitle" style="color: #f59e0b; margin-bottom: 15px; font-size: 20px;"></h3>
+            <div style="display: flex; flex-direction: column;" id="liveOptionsArea">
+                <!-- أزرار الخيارات تتولد هنا -->
+            </div>
+        </div>
     </div>
 
     <script>
-        let peer;
-        let myName, myNick;
+        let peer = null;
+        let connToHost = null; // للاعب
+        let playerConnections = []; // للهوست لحفظ اتصالات اللاعبين
+        let myRole = ''; // 'host' أو 'player'
+        let myGlobalName = '';
 
-        function connectToLiveServer() {
-            myName = document.getElementById('pName').value.trim();
-            myNick = document.getElementById('pNick').value.trim();
-            if(!myName || !myNick) { alert("اكتب اسمك ولقبك أول!"); return; }
+        function showPlayerSetup() {
+            myGlobalName = document.getElementById('mainName').value.trim();
+            if(!myGlobalName) { alert("اكتب اسمك الحقيقي أول عشان يعرفونك الربع!"); return; }
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('playerSetupScreen').classList.remove('hidden');
+        }
 
-            // ربط الجهاز بسيرفر النت لايف أوتوماتيك بدون كود يدوي
-            peer = new Peer('diwaniyah-' + Math.random().toString(36).substr(2, 4));
+        function showHostSetup() {
+            myGlobalName = document.getElementById('mainName').value.trim();
+            if(!myGlobalName) { alert("اكتب اسمك الحقيقي أول!"); return; }
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('hostSetupScreen').classList.remove('hidden');
+        }
+
+        function backToMain() {
+            document.getElementById('playerSetupScreen').classList.add('hidden');
+            document.getElementById('hostSetupScreen').classList.remove('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+        }
+
+        // --- كود الهوست والتحقق من كلمة السر 27 ---
+        function verifyAndStartHost() {
+            const pass = document.getElementById('hostPassword').value.trim();
+            if(pass !== "27") {
+                alert("❌ كلمة السر غلط! ما تقدر تصير هوست وتتحكم بالجيم.");
+                return;
+            }
+
+            myRole = 'host';
+            const randomRoomId = Math.floor(1000 + Math.random() * 9000); // رقم غرفة من 4 أرقام
+            
+            peer = new Peer('diw-room-' + randomRoomId);
             
             peer.on('open', function(id) {
-                document.getElementById('loginScreen').classList.add('hidden');
-                document.getElementById('gameScreen').classList.remove('hidden');
-                alert("دخلت السيرفر! الحين أي أحد يفتح الموقع يبي يشوفك لايف ويصوت عليك وتصوت عليه فوراً بالنت!");
-                // هنا يبدأ السيرفر يستقبل ويرسل البيانات بالنت لكل الجوالات أوتوماتيك
+                document.getElementById('hostSetupScreen').classList.add('hidden');
+                document.getElementById('hostDashboard').classList.remove('hidden');
+                document.getElementById('hostRoomIdDisplay').innerText = randomRoomId;
             });
+
+            // استقبال دخول اللاعبين أونلاين
+            peer.on('connection', function(conn) {
+                conn.on('data', function(data) {
+                    if(data.type === 'JOIN') {
+                        // حفظ اتصال اللاعب مضافاً إليه اسمه الحقيقي
+                        conn.playerName = data.name;
+                        playerConnections.push(conn);
+                        updateHostPlayersUI();
+                    }
+                });
+
+                conn.on('close', function() {
+                    playerConnections = playerConnections.filter(c => c.peer !== conn.peer);
+                    updateHostPlayersUI();
+                });
+            });
+        }
+
+        function updateHostPlayersUI() {
+            document.getElementById('liveCount').innerText = playerConnections.length;
+            const list = document.getElementById('hostPlayersList');
+            if(playerConnections.length === 0) {
+                list.innerHTML = '<p style="color:#6b7280; text-align:center;">بانتظار دخول أول لاعب من جواله...</p>';
+                return;
+            }
+            list.innerHTML = playerConnections.map(c => `
+                <div class="player-row">
+                    <span>🟢 <strong>${c.playerName}</strong></span>
+                    <button onclick="kickPlayer('${c.peer}')" class="btn-danger">طرد من السيرفر 🛑</button>
+                </div>
+            `).join('');
+        }
+
+        // ميزة الطرد المباشر للهوست
+        function kickPlayer(peerId) {
+            const targetConn = playerConnections.find(c => c.peer === peerId);
+            if(targetConn) {
+                targetConn.send({ type: 'KICKED' });
+                setTimeout(() => { targetConn.close(); }, 500);
+                playerConnections = playerConnections.filter(c => c.peer !== peerId);
+                updateHostPlayersUI();
+                alert("تم طرده بنجاح واختفى من السيرفر!");
+            }
+        }
+
+        // ميزة بث الأسئلة من الهوست لشاشات اللاعبين فوراً بالنت
+        function addAndPushQuestion() {
+            const qText = document.getElementById('newQuestionText').value.trim();
+            const a = document.getElementById('optA').value.trim();
+            const b = document.getElementById('optB').value.trim();
+            const c = document.getElementById('optC').value.trim();
+            const correct = document.getElementById('correctOpt').value;
+
+            if(!qText || !a || !b || !c) { alert("أكمل بيانات السؤال وخياراته أولاً!"); return; }
+
+            // إرسال السؤال بالنت لكل اللاعبين المتصلين في نفس اللحظة
+            playerConnections.forEach(conn => {
+                conn.send({
+                    type: 'NEW_QUESTION',
+                    question: qText,
+                    options: [a, b, c],
+                    correctIndex: parseInt(correct)
+                });
+            });
+
+            alert("🔥 تم إطلاق السؤال وبثه بنجاح على شاشات جميع الربع الحين!");
+            document.getElementById('newQuestionText').value = '';
+            document.getElementById('optA').value = '';
+            document.getElementById('optB').value = '';
+            document.getElementById('optC').value = '';
+        }
+
+
+        // --- كود اللاعب والاتصال الأونلاين ---
+        function connectAsPlayer() {
+            const roomId = document.getElementById('joinRoomId').value.trim();
+            if(!roomId) { alert("اكتب رقم الغرفة حق الهوست أول!"); return; }
+
+            myRole = 'player';
+            peer = new Peer();
+
+            peer.on('open', function(id) {
+                connToHost = peer.connect('diw-room-' + roomId);
+
+                connToHost.on('open', function() {
+                    document.getElementById('playerSetupScreen').classList.add('hidden');
+                    document.getElementById('playerDashboard').classList.remove('hidden');
+                    document.getElementById('playerWelcomeHeader').innerText = "🎮 ساحة اللاعب: " + myGlobalName;
+                    
+                    // إرسال اسم اللاعب للهوست ليتسجل بالسيرفر لايف
+                    connToHost.send({ type: 'JOIN', name: myGlobalName });
+                });
+
+                // استقبال الأوامر الحية من الهوست (السؤال أو الطرد)
+                connToHost.on('data', function(data) {
+                    if(data.type === 'NEW_QUESTION') {
+                        showQuestionToPlayer(data);
+                    } else if(data.type === 'KICKED') {
+                        alert("🛑 أفااا! لقد تم طردك من قبل الهوست برا السيرفر!");
+                        location.reload();
+                    }
+                });
+            });
+        }
+
+        function showQuestionToPlayer(data) {
+            document.getElementById('playerStatusText').classList.add('hidden');
+            const qBox = document.getElementById('activeQuestionBox');
+            qBox.classList.remove('hidden');
+
+            document.getElementById('liveQuestionTitle').innerText = data.question;
+            const area = document.getElementById('liveOptionsArea');
+            
+            area.innerHTML = data.options.map((opt, idx) => `
+                <button class="opt-btn" onclick="submitPlayerAnswer(${idx + 1}, ${data.correctIndex})">
+                    ${idx + 1}. ${opt}
+                </button>
+            `).join('');
+        }
+
+        function submitPlayerAnswer(chosen, correct) {
+            const qBox = document.getElementById('activeQuestionBox');
+            qBox.classList.add('hidden');
+            
+            const status = document.getElementById('playerStatusText');
+            status.classList.remove('hidden');
+
+            if(chosen === correct) {
+                status.innerHTML = "🔥 <strong style='color:#10b981;'>إجابتك صحيحة وقحشت نقاط كفو!</strong> بانتظار السؤال القادم من الهوست...";
+            } else {
+                status.innerHTML = "❌ <strong style='color:#ef4444;'>التخمين طلع غلط وجبت العيد!</strong> بانتظار السؤال القادم من الهوست...";
+            }
         }
     </script>
 </body>
