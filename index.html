@@ -10,7 +10,7 @@
         .container { max-width: 650px; width: 100%; background: #111827; padding: 25px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); border: 1px solid #1f2937; text-align: center; margin-top: 15px; }
         h1 { color: #38bdf8; font-size: 24px; margin-bottom: 20px; text-shadow: 0 2px 10px rgba(56, 189, 248, 0.2); }
         h2 { color: #cbd5e1; font-size: 18px; margin-bottom: 15px; }
-        input, textarea { width: 100%; padding: 12px; background: #1f2937; border: 1px solid #374151; border-radius: 10px; color: white; text-align: center; font-size: 16px; margin-bottom: 10px; }
+        input, select, textarea { width: 100%; padding: 12px; background: #1f2937; border: 1px solid #374151; border-radius: 10px; color: white; text-align: center; font-size: 16px; margin-bottom: 10px; }
         button { width: 100%; padding: 14px; background: linear-gradient(135deg, #06b6d4, #0891b2); border: none; border-radius: 10px; color: white; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 5px; }
         button:hover { opacity: 0.95; }
         .btn-host { background: linear-gradient(135deg, #f59e0b, #d97706); }
@@ -20,7 +20,9 @@
         .box { background: #1e293b; border: 1px solid #334155; padding: 15px; border-radius: 12px; margin-top: 15px; text-align: right; }
         .player-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #374151; }
         .room-badge { background: #0c4a6e; color: #38bdf8; padding: 5px 12px; border-radius: 6px; font-weight: bold; font-size: 18px; display: inline-block; }
-        .ans-card { background: #111827; border: 1px solid #374151; padding: 12px; border-radius: 8px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .ans-card { background: #111827; border: 1px solid #374151; padding: 12px; border-radius: 8px; margin-top: 8px; }
+        .timer-badge { background: #ef4444; color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 18px; display: inline-block; margin-bottom: 10px; }
+        .vote-item { background: #111827; border: 1px solid #374151; padding: 12px; border-radius: 8px; margin-bottom: 10px; }
     </style>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
 </head>
@@ -30,9 +32,9 @@
 
     <!-- 1. شاشة الدخول واختيار الدور -->
     <div id="loginScreen" class="container">
-        <h2>مرحباً بك في السيرفر الأونلاين المطور</h2>
+        <h2>مرحباً بك في السيرفر الأونلاين الحقيقي</h2>
         <br>
-        <input type="text" id="mainName" placeholder="اسمك الحقيقي الصدقي الحين...">
+        <input type="text" id="mainName" placeholder="اسمك الحقيقي الصدقي...">
         <input type="text" id="mainNick" placeholder="لقبك السري المجهول (لللاعبين)...">
         <button onclick="showPlayerSetup()">🏃 الانضمام كـ لاعب بالديوانية</button>
         <button onclick="showHostSetup()" class="btn-host">👑 الدخول كـ هوست (كلمة السر 27)</button>
@@ -62,24 +64,17 @@
             <div id="hostRoomIdDisplay" class="room-badge">...</div>
         </div>
 
-        <!-- بث سؤال عادي (السؤال 1 و 2) -->
+        <!-- أزرار التحكم والبث -->
         <div class="box">
-            <h3 style="color: #38bdf8; margin-bottom: 10px;">📝 المرحلة الأولى: بث الأسئلة العامة (اكتب سؤالين):</h3>
-            <input type="text" id="hostQuestionInput" placeholder="اكتب سؤالك هنا (مثال: من فاز ببطولة البارح؟)">
-            <button onclick="broadcastCustomQuestion()" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">🚀 بث هذا السؤال لشاشاتهم الحين</button>
+            <h3 style="color: #38bdf8; margin-bottom: 10px;">📢 إدارة الجيم لايف:</h3>
+            <button onclick="broadcastVoteRound()" style="background: linear-gradient(135deg, #10b981, #059669);">🔓 إطلاق جولة التصويت على الألقاب (40 ثانية) ⏱️</button>
         </div>
 
-        <!-- فتح جولة التصويت على الألقاب -->
+        <!-- استقبال تخمينات الربع لايف وتوزيع النقاط -->
         <div class="box">
-            <h3 style="color: #10b981; margin-bottom: 10px;">🎭 المرحلة الثانية: جولة التصويت الكبرى على الألقاب:</h3>
-            <button onclick="broadcastVoteRound()" style="background: linear-gradient(135deg, #10b981, #059669);">🔓 إطلاق جولة تصويت الألقاب الحرة الحين</button>
-        </div>
-
-        <!-- استقبال إجابات وتخمينات الربع لايف وتوزيع النقاط -->
-        <div class="box">
-            <h3 style="color: #f59e0b; margin-bottom: 10px;">📥 الأجوبة والتخمينات اللي وصلت لايف:</h3>
+            <h3 style="color: #f59e0b; margin-bottom: 10px;">📥 التخمينات المكتوبة اللي وصلت لايف:</h3>
             <div id="hostAnswersArea">
-                <p style="color:#6b7280; text-align:center;">بانتظار إرسال الربع من جوالاتهم...</p>
+                <p style="color:#6b7280; text-align:center;">بانتظار بدء الجولة وإرسال الربع من جوالاتهم...</p>
             </div>
         </div>
 
@@ -98,13 +93,20 @@
         </div>
         
         <!-- حالة الانتظار -->
-        <p id="playerStatusText" style="color: #38bdf8; margin: 15px 0;">🟢 متصل بالسيرفر! انتظر رامي يطلق لكم سؤال أو جولة التصويت وبتحول شاشتك فوري...</p>
+        <p id="playerStatusText" style="color: #38bdf8; margin: 15px 0;">🟢 متصل بالسيرفر! انتظر رامي يضغط "تصويت" وبتتحول شاشتك فوري لايف...</p>
 
-        <!-- صندوق الكتابة الحر والاستقبال اللحظي من جوالك (يتحرك ويظهر تلقائياً) -->
-        <div id="activeQuestionBox" class="box hidden">
-            <h3 id="liveQuestionLabel" style="color: #f59e0b; margin-bottom: 15px; text-align: center;"></h3>
-            <textarea id="playerAnswerInput" rows="2" placeholder="اكتب إجابتك أو تخمينك هنا بيدك الحين..."></textarea>
-            <button onclick="sendAnswerToHost()">🚀 إرسال الجواب لـ لوحة رامي فوري</button>
+        <!-- ساحة التصويت التلقائية (تظهر وتتحرك لايف عند اللاعب) -->
+        <div id="activeVoteBox" class="box hidden">
+            <div style="text-align: center;">
+                <div id="timerDisplay" class="timer-badge">40</div>
+            </div>
+            <h3 style="color: #f59e0b; margin-bottom: 15px; text-align: center;">🕵️ خمن ألقاب الربع الحين:</h3>
+            
+            <div id="voteItemsArea">
+                <!-- الألقاب وقوائم الأسماء تتولد هنا تلقائياً -->
+            </div>
+            
+            <button onclick="sendVotesToHost()" style="background: linear-gradient(135deg, #10b981, #059669); margin-top: 15px;">🚀 إرسال كل التخمينات الحين فوري</button>
         </div>
     </div>
 
@@ -116,11 +118,12 @@
         let myGlobalName = '';
         let myGlobalNick = '';
         let playersData = {};
+        let countdownInterval = null;
 
         function showPlayerSetup() {
             myGlobalName = document.getElementById('mainName').value.trim();
             myGlobalNick = document.getElementById('mainNick').value.trim();
-            if(!myGlobalName || !myGlobalNick) { alert("تكفى اكتب اسمك الصدقي ولقبك السري أول!"); return; }
+            if(!myGlobalName || !myGlobalNick) { alert("اكتب اسمك الصدقي ولقبك السري أول!"); return; }
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('playerSetupScreen').classList.remove('hidden');
         }
@@ -157,13 +160,13 @@
             peer.on('connection', function(conn) {
                 conn.on('data', function(data) {
                     if(data.type === 'JOIN') {
-                        playersData[conn.peer] = { name: data.name, nick: data.nick, score: 0, currentAnswer: '' };
+                        playersData[conn.peer] = { name: data.name, nick: data.nick, score: 0, currentAnswer: [] };
                         playerConnections.push(conn);
                         updateHostUI();
                         syncScoresToPlayers();
-                    } else if(data.type === 'SUBMIT_ANSWER') {
+                    } else if(data.type === 'SUBMIT_VOTES') {
                         if(playersData[conn.peer]) {
-                            playersData[conn.peer].currentAnswer = data.answer;
+                            playersData[conn.peer].currentAnswer = data.votes; // [ {nick, guessedName} ]
                             updateHostUI();
                         }
                     }
@@ -191,14 +194,16 @@
 
             const ansArea = document.getElementById('hostAnswersArea');
             const answersHtml = Object.keys(playersData).map(pId => {
-                if(!playersData[pId].currentAnswer) return '';
+                const pVotes = playersData[pId].currentAnswer;
+                if(!pVotes || pVotes.length === 0) return '';
+                const votesText = pVotes.map(v => `اللقب [${v.nick}] هو: <b style="color:#38bdf8;">${v.guessedName}</b>`).join(' | ');
                 return `
-                    <div class="ans-card">
-                        <span>👤 <strong>${playersData[pId].name}</strong> كتب: <b style="color:#38bdf8; font-size:16px;">${playersData[pId].currentAnswer}</b></span>
+                    <div class="ans-card" style="text-align:right; padding:10px; border-bottom:1px solid #374151;">
+                        👤 <strong>${playersData[pId].name}</strong> يخمن أن: <br> ${votesText}
                     </div>
                 `;
             }).join('');
-            ansArea.innerHTML = answersHtml || '<p style="color:#6b7280; text-align:center;">بانتظار وصول الأجوبة من الجوالات الحين...</p>';
+            ansArea.innerHTML = answersHtml || '<p style="color:#6b7280; text-align:center;">بانتظار بدء الجولة وإرسال الربع من جوالاتهم...</p>';
         }
 
         function adjustScore(pId, amount) {
@@ -225,32 +230,27 @@
             }
         }
 
-        function broadcastCustomQuestion() {
-            const text = document.getElementById('hostQuestionInput').value.trim();
-            if(!text) { alert("اكتب السؤال أول يا رامي!"); return; }
-            
-            Object.keys(playersData).forEach(pId => playersData[pId].currentAnswer = '');
-            updateHostUI();
-
-            playerConnections.forEach(conn => {
-                conn.send({ type: 'OPEN_BOX', label: "📝 سؤال من رامي: " + text });
-            });
-            alert("تم بث السؤال وتحركت شاشات الشباب الحين!");
-            document.getElementById('hostQuestionInput').value = '';
-        }
-
         function broadcastVoteRound() {
-            Object.keys(playersData).forEach(pId => playersData[pId].currentAnswer = '');
+            // تصفير الأجوبة القديمة
+            Object.keys(playersData).forEach(pId => playersData[pId].currentAnswer = []);
             updateHostUI();
 
+            // تجهيز قائمة الألقاب وقائمة الأسماء الصدقية لإرسالها للكل
+            const allNicks = Object.keys(playersData).map(pId => playersData[pId].nick);
+            const allNames = Object.keys(playersData).map(pId => playersData[pId].name);
+
             playerConnections.forEach(conn => {
-                conn.send({ type: 'OPEN_BOX', label: "🎭 جولة التصويت! اكتب تخمينك للألقاب بيدك الحين (مثال: محمد هو دينار)" });
+                conn.send({ 
+                    type: 'START_VOTE_ROUND', 
+                    nicks: allNicks, 
+                    names: allNames 
+                });
             });
-            alert("🔥 أطلقت جولة التصويت وفتحت صناديق الكتابة بجوالاتهم الحين!");
+            alert("🔥 تم إطلاق جولة التصويت وتحولت شاشات الشباب الحين لـ اختيار القائمة وبدأ عداد الـ 40 ثانية!");
         }
 
 
-        // --- كود اللاعب والاتصال الأونلاين الحقيقي ---
+        // --- كود اللاعب والاتصال الأونلاين ---
         function connectAsPlayer() {
             const roomId = document.getElementById('joinRoomId').value.trim();
             if(!roomId) return;
@@ -264,17 +264,12 @@
                     document.getElementById('playerDashboard').classList.remove('hidden');
                     document.getElementById('playerWelcomeHeader').innerText = "🎮 لاعب: " + myGlobalName;
                     
-                    // إرسال الاسم الصدقي واللقب السري للهوست فوري عند الدخول
                     connToHost.send({ type: 'JOIN', name: myGlobalName, nick: myGlobalNick });
                 });
 
                 connToHost.on('data', function(data) {
-                    if(data.type === 'OPEN_BOX') {
-                        // إخفاء نص الانتظار وإظهار مربع الكتابة فوراً بشكل متحرك لايف
-                        document.getElementById('playerStatusText').classList.add('hidden');
-                        document.getElementById('activeQuestionBox').classList.remove('hidden');
-                        document.getElementById('liveQuestionLabel').innerText = data.label;
-                        document.getElementById('playerAnswerInput').value = '';
+                    if(data.type === 'START_VOTE_ROUND') {
+                        startPlayerVoteUI(data.nicks, data.names);
                     } else if(data.type === 'UPDATE_SCORE') {
                         document.getElementById('playerScoreDisplay').innerText = "نقاطك الحالية: " + data.score;
                     } else if(data.type === 'KICKED') {
@@ -285,16 +280,61 @@
             });
         }
 
-        function sendAnswerToHost() {
-            const ans = document.getElementById('playerAnswerInput').value.trim();
-            if(!ans) return;
-            connToHost.send({ type: 'SUBMIT_ANSWER', answer: ans });
+        function startPlayerVoteUI(nicks, names) {
+            document.getElementById('playerStatusText').classList.add('hidden');
+            const voteBox = document.getElementById('activeVoteBox');
+            voteBox.classList.remove('hidden');
+
+            // إخفاء لقب اللاعب نفسه عشان ما يصوت على روحه
+            const filteredNicks = nicks.filter(n => n !== myGlobalNick);
             
-            // إعادة الشاشة لوضع الانتظار بعد الإرسال فوراً عشان تقفل عليهم وما يكررون الجواب
-            document.getElementById('activeQuestionBox').classList.add('hidden');
+            const area = document.getElementById('voteItemsArea');
+            const namesOptions = names.map(n => `<option value="${n}">${n}</option>`).join('');
+
+            area.innerHTML = filteredNicks.map((nick, idx) => `
+                <div class="vote-item" style="text-align: right;">
+                    <p style="color:#38bdf8; font-weight:bold; margin-bottom:5px;">🎭 اللقب السري: 【 ${nick} 】</p>
+                    <select class="vote-select-item" data-nick="${nick}">
+                        <option value="">-- اختر صاحب هذا اللقب --</option>
+                        ${namesOptions}
+                    </select>
+                </div>
+            `).join('');
+
+            // تشغيل العداد 40 ثانية
+            let timeLeft = 40;
+            document.getElementById('timerDisplay').innerText = timeLeft;
+            clearInterval(countdownInterval);
+            
+            countdownInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timerDisplay').innerText = timeLeft;
+                if(timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    sendVotesToHost(); // إرسال تلقائي إذا قضى الوقت
+                }
+            }, 1000);
+        }
+
+        function sendVotesToHost() {
+            clearInterval(countdownInterval);
+            const selectElements = document.querySelectorAll('.vote-select-item');
+            let votesCollected = [];
+
+            selectElements.forEach(sel => {
+                const nick = sel.getAttribute('data-nick');
+                const guessedName = sel.value;
+                if(guessedName) {
+                    votesCollected.push({ nick: nick, guessedName: guessedName });
+                }
+            });
+
+            connToHost.send({ type: 'SUBMIT_VOTES', votes: votesCollected });
+            
+            document.getElementById('activeVoteBox').classList.add('hidden');
             const status = document.getElementById('playerStatusText');
             status.classList.remove('hidden');
-            status.innerHTML = "✅ <strong>تم إرسال جوابك لـ رامي بنجاح!</strong> انتظر يعطي النقاط باللوحة ويفتح الجولة الجاية...";
+            status.innerHTML = "✅ <strong>تم إرسال كل تخميناتك لـ رامي بنجاح!</strong> انتظر يشوف الأجوبة ويعطيكم نقاط باللوحة لايف الحين...";
         }
     </script>
 </body>
